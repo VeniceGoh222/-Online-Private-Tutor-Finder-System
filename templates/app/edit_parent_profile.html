@@ -1,0 +1,93 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Edit Parent Profile</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'app:edit_parent_profile' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Parent ID (Non-editable) -->
+                        <div class="form-group">
+                            <label><strong>Parent ID:</strong></label>
+                            <input type="text" class="form-control" value="{{ parent.user.parent.id }}" readonly>
+                        </div>
+
+                        <!-- Parent Name -->
+                        <div class="form-group">
+                            <label for="parent_name">Parent Name:</label>
+                            <input type="text" class="form-control" name="parent_name" value="{{ parent.user.username }}" required>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" name="email" value="{{ parent.user.email }}" required>
+                        </div>
+
+                        <!-- Contact Number -->
+                        <div class="form-group">
+                            <label for="contact_number">Contact Number:</label>
+                            <input type="text" class="form-control" name="contact_number" value="{{ parent.user.user_phone_num }}" required>
+                        </div>
+
+                        <!-- Child Name -->
+                        <div class="form-group">
+                            <label for="child_name">Child Name:</label>
+                            <input type="text" class="form-control" name="child_name" value="{{ parent.child_name }}" required>
+                        </div>
+
+                        <!-- Child Age -->
+                        <div class="form-group">
+                            <label for="child_age">Child Age:</label>
+                            <input type="number" class="form-control" name="child_age" value="{{ parent.child_age }}" required>
+                        </div>
+
+                        <!-- Child Level -->
+                        <div class="form-group">
+                            <label for="child_level">Child Level:</label>
+                            <input type="text" class="form-control" name="child_level" value="{{ parent.child_level }}" required>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                            <a href="{% url 'app:parent_profile' %}" class="btn btn-secondary">Back</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .btn {
+        margin-top: 10px;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

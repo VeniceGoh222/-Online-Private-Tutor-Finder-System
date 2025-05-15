@@ -1,0 +1,126 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<div class="register-container">
+    <h1 class="text-center mb-5">SIGN UP for Educator</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'app:register_tutor' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="text" name="username" class="form-control" placeholder="Tutor Full Name" required>
+        </div>
+        <div class="form-group">
+            <input type="email" name="email" class="form-control" placeholder="Email" required>
+        </div>
+        <div class="form-group">
+            <input type="tel" name="contact_number" class="form-control" placeholder="Contact Number" required>
+        </div>
+        <div class="form-group">
+            <select name="education_level" class="form-control" required>
+                <option value="" disabled selected>Select Education Level</option>
+                <option value="Bachelor's Degree">Bachelor's Degree</option>
+                <option value="Master's Degree">Master's Degree</option>
+                <option value="PhD">PhD</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <select name="subject_taught" class="form-control" required>
+                    <option value="" disabled selected>Subject Taught</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="History">History</option>
+                    <option value="Geography">Geography</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <div class="custom-file">
+                    <input type="file" name="certificate" class="custom-file-input" id="customFile" required>
+                    <label class="custom-file-label" for="customFile">Upload Cert</label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+        <div class="form-group">
+            <input type="password" name="confirm_password" class="form-control" placeholder="Reenter Password" required>
+        </div>
+        <button type="submit" class="btn btn-outline-dark btn-block">SIGN UP</button>
+    </form>
+
+    <div class="login-link text-center mt-4">
+        <p>You already have an account? <a href="{% url 'app:login' %}">Login here.</a></p>
+    </div>
+</div>
+
+<style>
+    .register-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        height: calc(1.5em + 1rem + 2px);
+        padding: .5rem 1rem;
+        font-size: 1rem;
+        border-radius: .25rem;
+    }
+    
+    select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.763L10.825 4z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 12px;
+        padding-right: 2.5rem;
+    }
+    
+    select.form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    }
+    
+    select.form-control option {
+        padding: 10px;
+    }
+    
+    .custom-file-label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<script>
+    // Update file input label with selected filename
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+        var fileName = e.target.files[0].name;
+        var label = e.target.nextElementSibling;
+        label.innerHTML = fileName;
+    });
+</script>
+
+{% endblock %} 

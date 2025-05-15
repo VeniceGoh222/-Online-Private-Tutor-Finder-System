@@ -1,0 +1,75 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Viewing Profile of <strong>{{ tutor.tutor_name }}</strong></h2>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td><strong>Name</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.tutor_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ID</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.user.user_id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Contact</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.user.user_phone_num }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Education Level</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.education_level }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Subject Taught</strong></td>
+                                <td>:</td>
+                                <td>{{ tutor.subject_taught }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Certificate</strong></td>
+                                <td>:</td>
+                                <td>
+                                    {% if tutor.certificate %}
+                                        <a href="{{ tutor.certificate.url }}" target="_blank">
+                                            <i class="fas fa-folder"></i> View Certificate
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No certificate uploaded</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <a href="{% url 'app:parent_search' %}" class="btn btn-secondary">Back to Search</a>
+                        </div>
+                        <div>
+                            <a href="{% url 'app:chat_room' tutor.user.id %}" class="btn btn-primary">
+                                <i class="fas fa-comments"></i> Chat with Tutor
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

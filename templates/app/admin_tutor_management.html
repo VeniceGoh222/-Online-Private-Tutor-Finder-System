@@ -1,0 +1,168 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Tutor Management</h2>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex gap-2">
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Search and Filter -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search tutors..." 
+                               value="{{ search_query }}" id="searchInput">
+                        <button class="btn btn-outline-secondary" type="button" onclick="applySearch()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <select class="form-select" id="statusFilter" onchange="applyFilters()">
+                        <option value="">All Status</option>
+                        <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                        <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Approved</option>
+                        <option value="INACTIVE" {% if status_filter == 'INACTIVE' %}selected{% endif %}>Declined</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tutors Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Certificate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tutor in tutors %}
+                        <tr>
+                            <td>{{ tutor.tutor_name }}</td>
+                            <td>{{ tutor.user.email }}</td>
+                            <td>{{ tutor.subject_taught }}</td>
+                            <td>
+                                <span class="badge {% if tutor.user.profile_status == 'ACTIVE' %}bg-success{% elif tutor.user.profile_status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {% if tutor.user.profile_status == 'ACTIVE' %}
+                                        Approved
+                                    {% elif tutor.user.profile_status == 'PENDING' %}
+                                        Pending
+                                    {% else %}
+                                        Declined
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ tutor.certificate.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="fas fa-file-alt"></i> View
+                                </a>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewTutorDetails({{ tutor.user.id }})">View</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No tutors found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 0.5rem;
+    }
+    .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        padding: 1rem;
+    }
+    .btn i {
+        margin-right: 0.5rem;
+    }
+    .badge {
+        padding: 0.5em 0.75em;
+    }
+</style>
+
+<script>
+    function viewTutorDetails(tutorId) {
+        window.location.href = `/admin_tutor_management/tutor/${tutorId}/details/`;
+    }
+
+    function approveTutor(tutorId) {
+        if (confirm('Are you sure you want to approve this tutor?')) {
+            fetch(`/admin_tutor_management/tutor/${tutorId}/approve/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Force a hard refresh of the page to ensure we get updated data
+                    window.location.reload(true);
+                }
+            });
+        }
+    }
+
+    function declineTutor(tutorId) {
+        if (confirm('Are you sure you want to decline this tutor?')) {
+            fetch(`/admin_tutor_management/tutor/${tutorId}/decline/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Force a hard refresh of the page to ensure we get updated data
+                    window.location.reload(true);
+                }
+            });
+        }
+    }
+
+    function applySearch() {
+        const searchQuery = document.getElementById('searchInput').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        window.location.href = `/admin_tutor_management/?search=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`;
+    }
+
+    function applyFilters() {
+        const searchQuery = document.getElementById('searchInput').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        window.location.href = `/admin_tutor_management/?search=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(statusFilter)}`;
+    }
+
+    function exportTutorList() {
+        window.location.href = '/admin_tutor_management/export_tutors/';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Submit New Report</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'app:report' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label class="form-label">Issue Type</label>
+                            <select class="form-select" name="issue_type" required>
+                                <option value="" selected disabled>Select Issue Type</option>
+                                <option value="bug">Bug</option>
+                                <option value="performance">Performance Issue</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="4" 
+                                    placeholder="Please describe your issue in detail..." required></textarea>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Screenshot (Optional)</label>
+                            <input type="file" class="form-control" name="screenshot" accept="image/*">
+                            <div class="form-text">Supported formats: PNG, JPG, JPEG</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'app:parent_profile' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Previous Reports Section -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Previous Reports</h4>
+                    <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#previousReports">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="collapse show" id="previousReports">
+                    <div class="card-body p-0">
+                        {% if previous_reports %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for report in previous_reports %}
+                                        <tr>
+                                            <td>#{{ report.query_id }}</td>
+                                            <td>
+                                                {% with issue_type=report.query_details|slice:":20" %}
+                                                <span class="badge {% if 'bug' in issue_type|lower %}bg-danger
+                                                      {% elif 'performance' in issue_type|lower %}bg-warning
+                                                      {% else %}bg-info{% endif %}">
+                                                    {{ issue_type|slice:"12:" }}
+                                                </span>
+                                                {% endwith %}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if report.status == 'PENDING' %}bg-warning
+                                                      {% elif report.status == 'IN_PROGRESS' %}bg-info
+                                                      {% elif report.status == 'RESOLVED' %}bg-success
+                                                      {% else %}bg-secondary{% endif %}">
+                                                    {{ report.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-info" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#reportModal{{ report.query_id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Report Details Modal -->
+                                        <div class="modal fade" id="reportModal{{ report.query_id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Report Details #{{ report.query_id }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-6">
+                                                                <h6>Report ID</h6>
+                                                                <p>#{{ report.query_id }}</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Current Status</h6>
+                                                                <span class="badge {% if report.status == 'PENDING' %}bg-warning
+                                                                      {% elif report.status == 'IN_PROGRESS' %}bg-info
+                                                                      {% elif report.status == 'RESOLVED' %}bg-success
+                                                                      {% else %}bg-secondary{% endif %}">
+                                                                    {{ report.status }}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <h6>Details</h6>
+                                                            <p class="text-pre-wrap">{{ report.query_details }}</p>
+                                                        </div>
+                                                        {% if report.response %}
+                                                        <div class="mb-3">
+                                                            <h6>Staff Response</h6>
+                                                            <p>{{ report.response }}</p>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-clipboard-list fa-2x text-muted"></i>
+                                <p class="mt-2 text-muted">No previous reports found</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <h6><i class="fas fa-info-circle"></i> About Reports</h6>
+                        <p class="mb-0">We take all reports seriously and will investigate each issue thoroughly. You will be notified when there are updates to your report.</p>
+                    </div>
+                    <div class="alert alert-warning mb-0">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Important Note</h6>
+                        <p class="mb-0">Please provide as much detail as possible in your report to help us resolve the issue quickly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 500;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .modal-header {
+        background-color: #f8f9fa;
+    }
+    .alert {
+        border: none;
+        border-left: 4px solid;
+    }
+    .alert-info {
+        border-left-color: #0dcaf0;
+    }
+    .alert-warning {
+        border-left-color: #ffc107;
+    }
+    .text-pre-wrap {
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}

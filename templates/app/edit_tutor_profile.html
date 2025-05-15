@@ -1,0 +1,101 @@
+{% extends "app/tutor_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Edit Tutor Profile</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'app:edit_tutor_profile' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Tutor Name -->
+                        <div class="form-group mb-3">
+                            <label for="tutor_name"><strong>Name:</strong></label>
+                            <input type="text" class="form-control" id="tutor_name" name="tutor_name" value="{{ tutor.tutor_name }}" required>
+                        </div>
+
+                        <!-- Tutor ID (Read-only) -->
+                        <div class="form-group mb-3">
+                            <label for="user_id"><strong>ID:</strong></label>
+                            <input type="text" class="form-control" id="user_id" value="{{ tutor.user.user_id }}" readonly>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group mb-3">
+                            <label for="email"><strong>Email:</strong></label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ tutor.user.email }}" required>
+                        </div>
+
+                        <!-- Contact Number -->
+                        <div class="form-group mb-3">
+                            <label for="contact_number"><strong>Contact:</strong></label>
+                            <input type="text" class="form-control" id="contact_number" name="contact_number" value="{{ tutor.user.user_phone_num }}" required>
+                        </div>
+
+                        <!-- Education Level -->
+                        <div class="form-group mb-3">
+                            <label for="education_level"><strong>Education Level:</strong></label>
+                            <input type="text" class="form-control" id="education_level" name="education_level" value="{{ tutor.education_level }}" required>
+                        </div>
+
+                        <!-- Subject Taught -->
+                        <div class="form-group mb-3">
+                            <label for="subject_taught"><strong>Subject Taught:</strong></label>
+                            <input type="text" class="form-control" id="subject_taught" name="subject_taught" value="{{ tutor.subject_taught }}" required>
+                        </div>
+
+                        <!-- Certificate Upload -->
+                        <div class="form-group mb-3">
+                            <label for="certificate"><strong>Certificate:</strong></label>
+                            <input type="file" class="form-control" id="certificate" name="certificate" accept=".pdf,.doc,.docx">
+                            {% if tutor.certificate %}
+                                <div class="mt-2">
+                                    <p class="mb-2">Current certificate: 
+                                        <a href="{{ tutor.certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-download"></i> View Certificate
+                                        </a>
+                                    </p>
+                                    <small class="text-muted">Upload a new file to replace the current certificate.</small>
+                                </div>
+                            {% else %}
+                                <small class="text-muted">No certificate uploaded yet. Please upload your certificate.</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                            <a href="{% url 'app:tutor_profile' %}" class="btn btn-secondary ms-2">Cancel</a>
+                            {% if user.user_role == 'PARENT' %}
+                            <a href="{% url 'app:chat_room' tutor.user.id %}" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-comments"></i> Chat with Tutor
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group { margin-bottom: 1rem; }
+    .btn { margin-top: 10px; }
+    .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+    .card-header { background-color: #f8f9fa; }
+</style>
+{% endblock %}

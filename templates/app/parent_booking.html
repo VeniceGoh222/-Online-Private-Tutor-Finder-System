@@ -1,0 +1,105 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <h4>Your Favorite Tutors:</h4>
+
+            {% if favorite_tutors %}
+            <form method="POST" action="{% url 'app:parent_booking' %}" id="bookingForm">
+                {% csrf_token %}
+                <div class="table-wrapper">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Education Level</th>
+                                <th>Subject</th>
+                                <th>Price</th>
+                                <th>Time Slot</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for favorite in favorite_tutors %}
+                            <tr>
+                                <td>{{ favorite.tutor.tutor_name }}</td>
+                                <td>{{ favorite.tutor.education_level }}</td>
+                                <td>{{ favorite.tutor.subject_taught }}</td>
+                                <td>RM {{ favorite.price }}</td>
+                                <td>{{ favorite.start_time }} - {{ favorite.end_time }}</td>
+                                <td>
+                                    <input type="radio" 
+                                           name="selected_tutor_and_slot" 
+                                           value="{{ favorite.tutor.user.id }}|{{ favorite.selected_class.class_id }}|{{ favorite.start_time }}|{{ favorite.end_time }}"
+                                           class="form-check-input">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Send Booking Request</button>
+                    <a href="{% url 'app:parent_profile' %}" class="btn btn-outline-secondary">Back</a>
+                </div>
+            </form>
+
+            <!-- Separate section for managing favorites -->
+            <div class="mt-4">
+                <h5>Manage Favorites:</h5>
+                <div class="list-group">
+                    {% for favorite in favorite_tutors %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ favorite.tutor.tutor_name }} - {{ favorite.tutor.subject_taught }} ({{ favorite.start_time }} - {{ favorite.end_time }})</span>
+                        <form action="{% url 'app:delete_favorite_tutor' favorite.id %}" 
+                              method="POST" 
+                              class="delete-form"
+                              onsubmit="return confirm('Are you sure you want to remove this tutor from your favorites?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Remove from Favorites</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <p>You don't have any favorite tutors yet. Please add one from your <a href="{% url 'app:parent_search' %}" class="text-decoration-underline">search</a> results.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-danger {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+
+    .delete-form {
+        display: inline;
+        margin: 0;
+        padding: 0;
+    }
+
+    .list-group-item {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "app/staff_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Feedback Management</h2>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#flagged" role="tab">Flagged Feedback</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#all" role="tab">All Feedback</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Flagged Feedback Tab -->
+                        <div class="tab-pane fade show active" id="flagged" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Parent</th>
+                                            <th>Tutor</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for feedback in feedback_list %}
+                                        {% if feedback.flagged %}
+                                        <tr>
+                                            <td>{{ feedback.parent.parent_name }}</td>
+                                            <td>{{ feedback.tutor.tutor_name }}</td>
+                                            <td>{{ feedback.subject_name }}</td>
+                                            <td>
+                                                <span class="badge {% if feedback.status == 'VALID' %}bg-success{% elif feedback.status == 'INVALID' %}bg-danger{% elif feedback.status == 'RESOLVED' %}bg-info{% else %}bg-warning{% endif %}">
+                                                    {{ feedback.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal{{ feedback.feedback_id }}">
+                                                    Review
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- All Feedback Tab -->
+                        <div class="tab-pane fade" id="all" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Parent</th>
+                                            <th>Tutor</th>
+                                            <th>Subject</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for feedback in feedback_list %}
+                                        <tr>
+                                            <td>{{ feedback.parent.parent_name }}</td>
+                                            <td>{{ feedback.tutor.tutor_name }}</td>
+                                            <td>{{ feedback.subject_name }}</td>
+                                            <td>
+                                                <span class="badge {% if feedback.status == 'VALID' %}bg-success{% elif feedback.status == 'INVALID' %}bg-danger{% elif feedback.status == 'RESOLVED' %}bg-info{% else %}bg-warning{% endif %}">
+                                                    {{ feedback.status }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal{{ feedback.feedback_id }}">
+                                                    Review
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modals -->
+    {% for feedback in feedback_list %}
+    <div class="modal fade" id="reviewModal{{ feedback.feedback_id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Review Feedback</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'app:staff_feedback_review' feedback.feedback_id %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Parent's Feedback:</label>
+                            <div class="p-3 bg-light rounded">{{ feedback.comments }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="response{{ feedback.feedback_id }}" class="form-label">Response to Parent:</label>
+                            <textarea class="form-control" id="response{{ feedback.feedback_id }}" name="response" rows="3" required>{{ feedback.staff_response|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes{{ feedback.feedback_id }}" class="form-label">Internal Notes:</label>
+                            <textarea class="form-control" id="notes{{ feedback.feedback_id }}" name="staff_notes" rows="2">{{ feedback.staff_notes|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status:</label>
+                            <select name="status" class="form-select">
+                                <option value="PENDING" {% if feedback.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                <option value="VALID" {% if feedback.status == 'VALID' %}selected{% endif %}>Valid</option>
+                                <option value="INVALID" {% if feedback.status == 'INVALID' %}selected{% endif %}>Invalid</option>
+                                <option value="RESOLVED" {% if feedback.status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="flagged{{ feedback.feedback_id }}" name="flagged" {% if feedback.flagged %}checked{% endif %}>
+                                <label class="form-check-label" for="flagged{{ feedback.feedback_id }}">Flag this feedback</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

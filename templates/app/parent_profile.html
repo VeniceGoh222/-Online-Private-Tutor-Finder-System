@@ -1,0 +1,55 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Parent Profile</h2>
+                </div>
+                <div class="card-body">
+                    <div class="profile-info">
+                        <p><strong>Username:</strong> {{ parent.user.username }}</p>
+                        <p><strong>Email:</strong> {{ parent.user.email }}</p>
+                        <p><strong>Contact Number:</strong> {{ parent.user.user_phone_num }}</p>
+                        <p><strong>Child Name:</strong> {{ parent.child_name }}</p>
+                        <p><strong>Child Age:</strong> {{ parent.child_age }}</p>
+                        <p><strong>Child Level:</strong> {{ parent.child_level }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'app:edit_parent_profile' %}" class="btn btn-primary">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-info p {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    .profile-info p:last-child {
+        border-bottom: none;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

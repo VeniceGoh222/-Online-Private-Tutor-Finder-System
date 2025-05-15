@@ -1,0 +1,53 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<div class="container text-center mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 font-weight-bold mb-4">Online Private Tutor<br>Finder System</h1>
+            
+            <p class="lead mb-5" style="max-width: 800px; margin: 0 auto;">
+                The goal of this system is to help student overcome academic challenges and lead them to 
+                autonomous or independent learning. It is a special kind of website that will help student to 
+                find the way of glorious achievement in life.
+            </p>
+
+            <h2 class="display-5 font-weight-bold mb-3">Welcome Parents</h2>
+            {% if not user.is_authenticated %}
+            <p class="lead">
+                Please 
+                <a href="{% url 'app:role_select' %}" class="auth-link">Sign Up</a> / 
+                <a href="{% url 'app:login' %}" class="auth-link">Log In</a> 
+                to start our services.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .display-4 {
+        font-size: 3rem;
+        line-height: 1.2;
+    }
+    .lead {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    .auth-link {
+        text-decoration: underline;
+        color: #007bff;
+        transition: all 0.3s ease;
+        padding: 2px 4px;
+        border-radius: 3px;
+    }
+    .auth-link:hover {
+        font-weight: bold;
+        color: #0056b3;
+        text-decoration: underline;
+        background-color: #f0f0f0;  /* Light grey background on hover */
+    }
+</style>
+
+{% endblock %}

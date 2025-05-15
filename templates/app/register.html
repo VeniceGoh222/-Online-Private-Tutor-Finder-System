@@ -1,0 +1,97 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<h2>{{ title }}</h2>
+<div class="row">
+    <div class="col-md-8">
+        <section id="registerForm">
+            <form action="." method="post" class="form-horizontal">
+                {% csrf_token %}
+                <h4>Create a new account.</h4>
+                <hr />
+                <div class="form-group">
+                    <label for="id_username" class="col-md-2 control-label">Username</label>
+                    <div class="col-md-10">
+                        <input type="text" name="username" id="id_username" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_email" class="col-md-2 control-label">Email</label>
+                    <div class="col-md-10">
+                        <input type="email" name="email" id="id_email" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_phone" class="col-md-2 control-label">Phone</label>
+                    <div class="col-md-10">
+                        <input type="tel" name="user_phone_num" id="id_phone" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_role" class="col-md-2 control-label">Role</label>
+                    <div class="col-md-10">
+                        <select name="user_role" id="id_role" class="form-control" required>
+                            <option value="">Select a role</option>
+                            <option value="PARENT">Parent</option>
+                            <option value="TUTOR">Tutor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_password" class="col-md-2 control-label">Password</label>
+                    <div class="col-md-10">
+                        <input type="password" name="password" id="id_password" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_confirm_password" class="col-md-2 control-label">Confirm Password</label>
+                    <div class="col-md-10">
+                        <input type="password" name="confirm_password" id="id_confirm_password" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Register" class="btn btn-primary" />
+                    </div>
+                </div>
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </form>
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section id="socialLoginForm">
+            <h4>Already have an account?</h4>
+            <p>
+                Click <a href="{% url 'app:login' %}">here</a> to login.
+            </p>
+        </section>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    // Add password validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        var password = document.getElementById('id_password').value;
+        var confirmPassword = document.getElementById('id_confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+        }
+    });
+</script>
+{% endblock %}

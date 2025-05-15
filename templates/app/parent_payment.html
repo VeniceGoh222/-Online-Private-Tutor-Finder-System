@@ -1,0 +1,192 @@
+{% extends "app/parent_layout.html" %}
+{% load app_filters %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-credit-card me-2"></i>Make Payment</h4>
+        <div class="d-flex gap-2">
+            <a href="{% url 'app:parent_schedule' %}" class="btn btn-outline-primary">
+                <i class="fas fa-calendar-alt me-2"></i>View Schedule
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if bookings %}
+    <form method="post" action="{% url 'app:parent_payment' %}" id="paymentForm">
+        {% csrf_token %}
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Select Classes for Payment</h5>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Select</th>
+                                <th>Class Details</th>
+                                <th>Schedule</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr {% if not booking|is_valid_for_payment %}class="text-muted"{% endif %}>
+                                <td class="ps-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input booking-checkbox" 
+                                               type="checkbox" 
+                                               name="selected_bookings" 
+                                               value="{{ booking.booking_id }}" 
+                                               id="booking{{ booking.booking_id }}"
+                                               {% if not booking|is_valid_for_payment %}disabled{% endif %}>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <h6 class="mb-1">{{ booking.subject_name }}</h6>
+                                        <p class="mb-0 text-muted">
+                                            <small>
+                                                <i class="fas fa-user me-1"></i>{{ booking.tutor.tutor_name }}
+                                                <span class="ms-2">#{{ booking.booking_id }}</span>
+                                            </small>
+                                        </p>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if booking.schedule.time_slots %}
+                                        {% with time_slots=booking.schedule.time_slots %}
+                                            {% if time_slots|length > 0 %}
+                                                {% with slot=time_slots.0 %}
+                                                    <div>
+                                                        <span class="badge bg-light text-dark">{{ slot.weekday }}</span>
+                                                        <small class="d-block">{{ slot.start_time }} - {{ slot.end_time }}</small>
+                                                    </div>
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>RM {{ booking.schedule.price }}</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        {% if booking.booking_status == 'CONFIRMED' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                        {% elif booking.booking_status == 'PENDING' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif booking.booking_status == 'CANCELLED' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        {% endif %}
+
+                                        {% if booking|is_paid %}
+                                            <span class="badge bg-success ms-1">Paid</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-1">Unpaid</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <small>* Only confirmed and unpaid classes can be selected for payment</small>
+                    </div>
+                    <div>
+                        <span class="me-3">Selected: <span id="selectedCount">0</span></span>
+                        <button type="submit" class="btn btn-primary" id="makePaymentBtn" disabled>
+                            <i class="fas fa-credit-card me-2"></i>Make Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No payment records found</h5>
+        <p class="text-muted mb-3">You haven't made any bookings yet.</p>
+        <a href="{% url 'app:parent_search' %}" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>Find Tutors
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.table td {
+    vertical-align: middle;
+    padding: 1rem;
+}
+.badge {
+    font-weight: 500;
+}
+.form-check {
+    margin: 0;
+}
+.form-check-input {
+    cursor: pointer;
+}
+.form-check-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.text-muted {
+    opacity: 0.7;
+}
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: none;
+}
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bookingCheckboxes = document.querySelectorAll('.booking-checkbox:not(:disabled)');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const makePaymentBtn = document.getElementById('makePaymentBtn');
+
+    function updateSelectedCount() {
+        const selectedCount = Array.from(bookingCheckboxes).filter(cb => cb.checked).length;
+        selectedCountSpan.textContent = selectedCount;
+        makePaymentBtn.disabled = selectedCount === 0;
+    }
+
+    bookingCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

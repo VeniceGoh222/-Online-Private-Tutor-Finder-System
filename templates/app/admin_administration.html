@@ -1,0 +1,156 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Administration</h2>
+    </div>
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2 class="card-text">{{ total_users }}</h2>
+                    <p class="card-text"><small>Active: {{ active_users }}</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Tutors</h5>
+                    <h2 class="card-text">{{ total_tutors }}</h2>
+                    <p class="card-text"><small>Active: {{ active_tutors }} | Pending: {{ pending_tutors }}</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Parents</h5>
+                    <h2 class="card-text">{{ total_parents }}</h2>
+                    <p class="card-text"><small>With Bookings: {{ parents_with_bookings }}</small></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Bookings</h5>
+                    <h2 class="card-text">{{ total_bookings }}</h2>
+                    <p class="card-text"><small>Payments: {{ total_payments }}</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.get_user_role_display }}</td>
+                                    <td>
+                                        <span class="badge {% if user.profile_status == 'ACTIVE' %}bg-success{% elif user.profile_status == 'PENDING' %}bg-warning{% elif user.profile_status == 'INACTIVE' %}bg-secondary{% elif user.profile_status == 'SUSPENDED' %}bg-danger{% else %}bg-info{% endif %} text-white" style="padding: 8px 12px; font-size: 0.9em;">
+                                            {{ user.get_profile_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Recent Bookings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Parent</th>
+                                    <th>Tutor</th>
+                                    <th>Session Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings %}
+                                <tr>
+                                    <td>{{ booking.parent.user.username }}</td>
+                                    <td>{{ booking.tutor.user.username }}</td>
+                                    <td>
+                                        {% if booking.schedule and booking.schedule.time_slots %}
+                                            {% if booking.schedule.time_slots|first %}
+                                                {% with slot=booking.schedule.time_slots|first %}
+                                                    {{ slot.weekday }} {{ slot.start_time }}:00 - {{ slot.end_time }}:00
+                                                {% endwith %}
+                                            {% else %}
+                                                <span class="text-muted">No time slot</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No schedule</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p><strong>Django Version:</strong> {{ system_info.django_version }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>Python Version:</strong> {{ system_info.python_version }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>Timezone:</strong> {{ system_info.timezone }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p><strong>OS Info:</strong> {{ system_info.os_info }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

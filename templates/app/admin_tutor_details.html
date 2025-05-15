@@ -1,0 +1,155 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'app:admin_profile' %}">Admin Profile</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:admin_tutor_management' %}">Tutor Management</a></li>
+            <li class="breadcrumb-item active">{{ tutor.tutor_name }}</li>
+        </ol>
+    </nav>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Tutor Information -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Tutor Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Name:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ tutor.tutor_name }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Email:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ tutor.user.email }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Education Level:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ tutor.education_level }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Subject:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {{ tutor.subject_taught }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Status:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="badge {% if tutor.user.profile_status == 'ACTIVE' %}bg-success{% elif tutor.user.profile_status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ tutor.user.get_profile_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Certificate:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            {% if tutor.certificate %}
+                            <a href="{{ tutor.certificate.url }}" class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-alt"></i> View Certificate
+                            </a>
+                            {% else %}
+                            <p class="text-muted">No certificate uploaded</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Actions -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Verification Actions</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="tutor_id" value="{{ tutor.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">Change Status</label>
+                            <select name="status" class="form-select mb-3">
+                                <option value="PENDING" {% if tutor.user.profile_status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                <option value="ACTIVE" {% if tutor.user.profile_status == 'ACTIVE' %}selected{% endif %}>Approved</option>
+                                <option value="INACTIVE" {% if tutor.user.profile_status == 'INACTIVE' %}selected{% endif %}>Declined</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Verification Notes</label>
+                            <textarea name="verification_notes" class="form-control" rows="4">{{ tutor.verification_notes }}</textarea>
+                            <small class="text-muted">Add notes about the verification decision</small>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 0.5rem;
+    }
+    .card-header {
+        background-color: transparent;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        padding: 1rem;
+    }
+    .btn i {
+        margin-right: 0.5rem;
+    }
+    .badge {
+        padding: 0.5em 0.75em;
+    }
+</style>
+{% endblock %}

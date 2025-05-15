@@ -1,0 +1,32 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h2 class="mb-4">Choose Your Role</h2>
+            <div class="role-buttons">
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" value="parent">
+                    <button type="submit" class="btn btn-lg btn-outline-primary m-2">Register as Parent</button>
+                </form>
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="role" value="tutor">
+                    <button type="submit" class="btn btn-lg btn-outline-success m-2">Register as Tutor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-buttons {
+        margin-top: 2rem;
+    }
+    .btn {
+        min-width: 200px;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,142 @@
+{% extends 'app/staff_layout.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Notification Management</h2>
+    
+    <!-- Create Notification Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Create New Notification</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'app:staff_notification' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="target_audience" class="form-label">Target Audience</label>
+                            <select class="form-select" id="target_audience" name="target_audience" required>
+                                {% for value, label in target_choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="delivery_method" class="form-label">Delivery Method</label>
+                            <select class="form-select" id="delivery_method" name="delivery_method" required>
+                                {% for value, label in delivery_methods %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="scheduled_for" class="form-label">Schedule For</label>
+                            <input type="datetime-local" class="form-control" id="scheduled_for" name="scheduled_for" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Create Notification</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notifications List -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Notifications History</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Target</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Scheduled For</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notification in notifications %}
+                        <tr>
+                            <td>{{ notification.title }}</td>
+                            <td>{{ notification.get_target_audience_display }}</td>
+                            <td>{{ notification.get_delivery_method_display }}</td>
+                            <td>
+                                <span class="badge {% if notification.status == 'SENT' %}bg-success{% elif notification.status == 'FAILED' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ notification.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ notification.scheduled_for|date:"Y-m-d H:i" }}</td>
+                            <td>{{ notification.created_at|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No notifications found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Message Toast -->
+{% if messages %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    {% for message in messages %}
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header {% if message.tags %}bg-{{ message.tags }}{% endif %}">
+            <strong class="me-auto text-white">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {{ message }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-set scheduled_for to current datetime
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('scheduled_for').value = now.toISOString().slice(0, 16);
+    });
+
+    // Auto-hide toasts after 5 seconds
+    setTimeout(function() {
+        const toasts = document.getElementsByClassName('toast');
+        for(let toast of toasts) {
+            toast.classList.remove('show');
+        }
+    }, 5000);
+</script>
+{% endblock %}

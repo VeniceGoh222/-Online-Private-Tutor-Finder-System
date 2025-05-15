@@ -1,0 +1,195 @@
+{% extends "app/staff_layout.html" %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Data Management</h2>
+    </div>
+
+    <div class="row">
+        <!-- User Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">User Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Parents</h6>
+                                <h3>{{ total_parents }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Tutors</h6>
+                                <h3>{{ total_tutors }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Tutor Status</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            {% with active_percent=active_tutors|div:total_tutors|mul:100 pending_percent=pending_tutors|div:total_tutors|mul:100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ active_percent }}%" aria-valuenow="{{ active_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Active ({{ active_tutors }})
+                            </div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ pending_percent }}%" aria-valuenow="{{ pending_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Pending ({{ pending_tutors }})
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Class Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Classes</h6>
+                                <h3>{{ total_classes }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Active Classes</h6>
+                                <h3>{{ active_classes }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Class Availability</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            {% with active_percent=active_classes|div:total_classes|mul:100 full_percent=total_classes|sub:active_classes|div:total_classes|mul:100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ active_percent }}%" aria-valuenow="{{ active_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Available ({{ active_classes }})
+                            </div>
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ full_percent }}%" aria-valuenow="{{ full_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Full ({{ total_classes|sub:active_classes }})
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Booking Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Bookings</h6>
+                                <h3>{{ total_bookings }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Booking Status</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            {% with confirmed_percent=confirmed_bookings|div:total_bookings|mul:100 pending_percent=pending_bookings|div:total_bookings|mul:100 cancelled_percent=cancelled_bookings|div:total_bookings|mul:100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ confirmed_percent }}%" aria-valuenow="{{ confirmed_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Confirmed ({{ confirmed_bookings }})
+                            </div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ pending_percent }}%" aria-valuenow="{{ pending_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Pending ({{ pending_bookings }})
+                            </div>
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ cancelled_percent }}%" aria-valuenow="{{ cancelled_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Cancelled ({{ cancelled_bookings }})
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Payment Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Revenue</h6>
+                                <h3>RM {{ total_revenue }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Payment Status</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            {% with completed_percent=completed_payments|div:total_payments|mul:100 pending_percent=pending_payments|div:total_payments|mul:100 failed_percent=failed_payments|div:total_payments|mul:100 %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ completed_percent }}%" aria-valuenow="{{ completed_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Completed ({{ completed_payments }})
+                            </div>
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ pending_percent }}%" aria-valuenow="{{ pending_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Pending ({{ pending_payments }})
+                            </div>
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ failed_percent }}%" aria-valuenow="{{ failed_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                Failed ({{ failed_payments }})
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Statistics -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Support Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="border rounded p-3 text-center">
+                                <h6 class="text-muted">Total Queries</h6>
+                                <h3>{{ total_queries }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mt-3">
+                                <h6>Query Status</h6>
+                                <div class="progress mb-2" style="height: 25px;">
+                                    {% with resolved_percent=resolved_queries|div:total_queries|mul:100 in_progress_percent=in_progress_queries|div:total_queries|mul:100 pending_percent=pending_queries|div:total_queries|mul:100 %}
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ resolved_percent }}%" aria-valuenow="{{ resolved_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                        Resolved ({{ resolved_queries }})
+                                    </div>
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ in_progress_percent }}%" aria-valuenow="{{ in_progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                        In Progress ({{ in_progress_queries }})
+                                    </div>
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ pending_percent }}%" aria-valuenow="{{ pending_percent }}" aria-valuemin="0" aria-valuemax="100">
+                                        Pending ({{ pending_queries }})
+                                    </div>
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

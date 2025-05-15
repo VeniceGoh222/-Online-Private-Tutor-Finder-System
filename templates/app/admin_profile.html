@@ -1,0 +1,106 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Hello {{ admin.admin_name|default:user.username }}</h1>
+        <p class="lead text-muted">Welcome to Online Private Tutor Finder System</p>
+        <p class="text-muted">You may start your work now. Have a good day!</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <a href="{% url 'app:admin_administration' %}" class="card h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-cogs fa-3x mb-3 text-primary"></i>
+                    <h3 class="card-title">Administration</h3>
+                    <p class="card-text text-muted">System settings and performance monitoring</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <a href="{% url 'app:admin_user_management' %}" class="card h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x mb-3 text-success"></i>
+                    <h3 class="card-title">User Management</h3>
+                    <p class="card-text text-muted">Manage user accounts and permissions</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <a href="{% url 'app:admin_tutor_management' %}" class="card h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-chalkboard-teacher fa-3x mb-3 text-info"></i>
+                    <h3 class="card-title">Tutor Management</h3>
+                    <p class="card-text text-muted">Review and manage tutor applications</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <a href="{% url 'app:admin_payment_management' %}" class="card h-100 text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-3x mb-3 text-warning"></i>
+                    <h3 class="card-title">Payment Management</h3>
+                    <p class="card-text text-muted">Track and manage payment transactions</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="list-group">
+                        <a href="{% url 'app:admin_user_management' %}?status=PENDING" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Pending User Approvals
+                            <span class="badge bg-warning rounded-pill">{{ pending_users_count|default:'0' }}</span>
+                        </a>
+                        <a href="{% url 'app:admin_tutor_management' %}?status=PENDING" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Pending Tutor Applications
+                            <span class="badge bg-warning rounded-pill">{{ pending_tutors_count|default:'0' }}</span>
+                        </a>
+                        <a href="{% url 'app:admin_payment_management' %}?status=PENDING" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            Pending Payments
+                            <span class="badge bg-warning rounded-pill">{{ pending_payments_count|default:'0' }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .card-body {
+        padding: 2rem;
+    }
+    .list-group-item {
+        border: none;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem !important;
+        background-color: #f8f9fa;
+    }
+    .list-group-item:hover {
+        background-color: #e9ecef;
+    }
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5em 0.7em;
+    }
+</style>
+{% endblock %}

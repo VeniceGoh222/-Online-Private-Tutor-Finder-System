@@ -1,0 +1,205 @@
+{% extends "app/layout.html" %}
+
+{% block styles %}
+<style>
+    .navbar {
+        padding: 1rem 2rem;
+        background-color: white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        border: 2px solid #333;
+        padding: 0.5rem 1rem;
+    }
+    .nav-link {
+        font-size: 1rem;
+        margin: 0 0.3rem;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem !important;
+        border-radius: 4px;
+        color: #333 !important;
+    }
+    .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #000 !important;
+    }
+    .nav-link.active {
+        background-color: #e9ecef;
+        font-weight: 500;
+    }
+    .container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    @media (max-width: 991.98px) {
+        .navbar-nav {
+            padding: 1rem 0;
+        }
+        .nav-link {
+            margin: 0.2rem 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block head %}
+    {% load static %}
+    <link href="{% static 'app/css/notifications.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% csrf_token %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'app:parent_schedule' %}">Parent Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_profile' %}active{% endif %}" href="{% url 'app:parent_profile' %}">
+                        <i class="fas fa-user me-1"></i>Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_search' %}active{% endif %}" href="{% url 'app:parent_search' %}">
+                        <i class="fas fa-search me-1"></i>Tutor Search
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_booking' %}active{% endif %}" href="{% url 'app:parent_booking' %}">
+                        <i class="fas fa-book me-1"></i>Booking
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_schedule' %}active{% endif %}" href="{% url 'app:parent_schedule' %}">
+                        <i class="fas fa-calendar-alt me-1"></i>Schedule
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_payment' %}active{% endif %}" href="{% url 'app:parent_payment' %}">
+                        <i class="fas fa-credit-card me-1"></i>Payment
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_feedback' %}active{% endif %}" href="{% url 'app:parent_feedback' %}">
+                        <i class="fas fa-comments me-1"></i>Feedback
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'report' %}active{% endif %}" href="{% url 'app:report' %}">
+                        <i class="fas fa-chart-line me-1"></i>Report
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell me-1"></i>
+                        <span class="badge bg-danger notification-count" {% if not unread_notifications_count %}style="display: none;"{% endif %}>
+                            {{ unread_notifications_count }}
+                        </span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                        <h6 class="dropdown-header">Notifications</h6>
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                            <div class="dropdown-item notification-item {% if not notification.is_read %}unread bg-light{% endif %}" 
+                                 data-notification-id="{{ notification.id }}"
+                                 style="cursor: pointer;"
+                                 onclick="markNotificationAsRead(event, '{{ notification.id }}')">
+                                <small class="text-muted d-block">{{ notification.notification.created_at|timesince }} ago</small>
+                                <strong>{{ notification.notification.title }}</strong>
+                                <p class="mb-0 text-truncate">{{ notification.notification.content }}</p>
+                            </div>
+                            {% if not forloop.last %}
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="dropdown-item text-center text-muted">
+                                No notifications
+                            </div>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'app:logout' %}">
+                        <i class="fas fa-sign-out-alt me-1"></i>Log Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- This will be overridden by child templates -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add active class to parent nav-item when child nav-link is active
+        document.querySelectorAll('.nav-link').forEach(function(navLink) {
+            if (navLink.classList.contains('active')) {
+                navLink.closest('.nav-item').classList.add('active');
+            }
+        });
+    });
+
+    function updateNotificationBadge(unreadCount) {
+        const badge = document.querySelector('.notification-count');
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    function markNotificationAsRead(event, notificationId) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/mark-notification-as-read/${notificationId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Update notification appearance
+                const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (item) {
+                    item.classList.remove('unread', 'bg-light');
+                }
+                
+                // Update badge with server-provided count
+                updateNotificationBadge(data.unread_count);
+            } else {
+                console.error('Error:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock %}

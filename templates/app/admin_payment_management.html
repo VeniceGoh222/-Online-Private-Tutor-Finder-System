@@ -1,0 +1,203 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Payment Management</h2>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Revenue</h5>
+                    <p class="display-4">RM {{ total_revenue|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Payments</h5>
+                    <p class="display-4">{{ completed_payments }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Payments</h5>
+                    <p class="display-4">{{ pending_payments }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Failed Payments</h5>
+                    <p class="display-4">{{ failed_payments }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by parent, tutor, or payment ID..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status Filter</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="COMPLETED" {% if current_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                        <option value="PENDING" {% if current_status == 'PENDING' %}selected{% endif %}>Pending</option>
+                        <option value="FAILED" {% if current_status == 'FAILED' %}selected{% endif %}>Failed</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date Filter</label>
+                    <select name="date_filter" class="form-select">
+                        <option value="all" {% if current_date_filter == 'all' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if current_date_filter == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if current_date_filter == 'week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="month" {% if current_date_filter == 'month' %}selected{% endif %}>Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <a href="{% url 'app:admin_payment_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Payments</h5>
+                <button class="btn btn-success" onclick="exportPayments()">
+                    <i class="fas fa-download me-1"></i> Export Report
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Parent</th>
+                            <th>Tutor</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>#{{ payment.payment_id }}</td>
+                            <td>{{ payment.created_at|date:"M d, Y H:i" }}</td>
+                            <td>{{ payment.parent.parent_name }}</td>
+                            <td>{{ payment.tutor.tutor_name }}</td>
+                            <td>RM {{ payment.amount|floatformat:2 }}</td>
+                            <td>{{ payment.payment_method|title }}</td>
+                            <td>
+                                <span class="badge {% if payment.payment_status == 'COMPLETED' %}bg-success{% elif payment.payment_status == 'PENDING' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ payment.payment_status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>No payments found
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Details Modal -->
+<div class="modal fade" id="paymentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentDetails"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewPaymentDetails(paymentId) {
+        // Load payment details into modal
+        fetch(`/payment/${paymentId}/details/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('paymentDetails').innerHTML = data.html;
+                new bootstrap.Modal(document.getElementById('paymentDetailsModal')).show();
+            });
+    }
+
+    function updatePaymentStatus(paymentId, status) {
+        if (confirm('Are you sure you want to update this payment status?')) {
+            fetch(`/payment/${paymentId}/update-status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ status: status })
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    function refundPayment(paymentId) {
+        if (confirm('Are you sure you want to refund this payment? This action cannot be undone.')) {
+            fetch(`/payment/${paymentId}/refund/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+
+    function exportPayments() {
+        window.location.href = "{% url 'app:admin_export_payments' %}?" + new URLSearchParams(new FormData(document.querySelector('form'))).toString();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "app/layout.html" %}
+
+{% block styles %}
+<style>
+    .navbar {
+        padding: 1rem 2rem;
+        background-color: white !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        border: 2px solid #333;
+        padding: 0.5rem 1rem;
+    }
+    .nav-link {
+        font-size: 1rem;
+        margin: 0 0.3rem;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem !important;
+        border-radius: 4px;
+    }
+    .nav-link:hover {
+        background-color: #f8f9fa;
+    }
+    .nav-link.active {
+        background-color: #e9ecef;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'app:admin_profile' %}">Admin Panel</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_profile' %}active{% endif %}" 
+                       href="{% url 'app:admin_profile' %}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_administration' %}active{% endif %}" 
+                       href="{% url 'app:admin_administration' %}">
+                        <i class="fas fa-cogs"></i> Administration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_user_management' %}active{% endif %}" 
+                       href="{% url 'app:admin_user_management' %}">
+                        <i class="fas fa-users"></i> User Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_tutor_management' %}active{% endif %}" 
+                       href="{% url 'app:admin_tutor_management' %}">
+                        <i class="fas fa-chalkboard-teacher"></i> Tutor Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'admin_payment_management' %}active{% endif %}" 
+                       href="{% url 'app:admin_payment_management' %}">
+                        <i class="fas fa-dollar-sign"></i> Payment Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'app:logout' %}">
+                        <i class="fas fa-sign-out-alt"></i> Log Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- This will be overridden by child templates -->
+{% endblock %}
+
+{% block scripts %}
+<!-- Add any admin-specific scripts here -->
+<script>
+    // Ensure Bootstrap 5 navbar works properly
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add active class to parent nav-item when child nav-link is active
+        document.querySelectorAll('.nav-link').forEach(function(navLink) {
+            if (navLink.classList.contains('active')) {
+                navLink.closest('.nav-item').classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

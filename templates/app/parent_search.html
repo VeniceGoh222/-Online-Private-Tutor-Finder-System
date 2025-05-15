@@ -1,0 +1,149 @@
+{% extends "app/parent_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Searching and Filtering Section -->
+        <div class="col-md-4">
+            <h4>Searching and filtering:</h4>
+            <form method="GET" action="{% url 'app:parent_search' %}">
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <select id="subject" name="subject" class="form-control">
+                        <option value="">Select Subject</option>
+                        <option value="math" {% if selected_subject == "math" %}selected{% endif %}>Mathematics</option>
+                        <option value="science" {% if selected_subject == "science" %}selected{% endif %}>Science</option>
+                        <option value="english" {% if selected_subject == "english" %}selected{% endif %}>English</option>
+                        <option value="history" {% if selected_subject == "history" %}selected{% endif %}>History</option>
+                        <option value="geography" {% if selected_subject == "geography" %}selected{% endif %}>Geography</option>
+                        <option value="physics" {% if selected_subject == "physics" %}selected{% endif %}>Physics</option>
+                        <option value="chemistry" {% if selected_subject == "chemistry" %}selected{% endif %}>Chemistry</option>
+                        <option value="biology" {% if selected_subject == "biology" %}selected{% endif %}>Biology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tutor_level">Tutor Education Level</label>
+                    <select id="tutor_level" name="tutor_level" class="form-control">
+                        <option value="">Select Level</option>
+                        <option value="bachelor" {% if selected_tutor_level == "bachelor" %}selected{% endif %}>Bachelor's Degree</option>
+                        <option value="master" {% if selected_tutor_level == "master" %}selected{% endif %}>Master's Degree</option>
+                        <option value="phd" {% if selected_tutor_level == "phd" %}selected{% endif %}>PhD</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+
+        <!-- Result Section -->
+        <div class="col-md-8">
+            <h4>Result:</h4>
+
+            <!-- Display success/error messages section -->
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'app:parent_add_favorite' %}">
+                {% csrf_token %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Subject</th>
+                            <th>Education Level</th>
+                            <th>Time Slot</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tutor_session in tutor_sessions %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'app:parent_view_tutor_profile' pk=tutor_session.tutor.user.pk %}" class="text-primary">
+                                    {{ tutor_session.tutor.tutor_name }}
+                                </a>
+                            </td>
+                            <td>{{ tutor_session.tutor.subject_taught }}</td>
+                            <td>{{ tutor_session.tutor.education_level }}</td>
+                            <td>
+                                {% if tutor_session.class.time_slots %}
+                                    {% for day, slots in tutor_session.class.time_slots.items %}
+                                        {% if slots %}
+                                            <div class="time-slot-day mb-2">
+                                                <strong>{{ day }}:</strong>
+                                                {% for slot in slots %}
+                                                    <div class="time-slot-item">
+                                                        <input type="radio" 
+                                                               id="slot_{{ tutor_session.tutor.user.id }}_{{ day }}_{{ slot.hour }}"
+                                                               name="selected_time_slot" 
+                                                               value="{{ tutor_session.tutor.user.id }}|{{ tutor_session.class.class_id }}|{{ slot.hour }}:00|{{ slot.hour|add:'1' }}:00"
+                                                               class="form-check-input">
+                                                        <label for="slot_{{ tutor_session.tutor.user.id }}_{{ day }}_{{ slot.hour }}"
+                                                               class="form-check-label">
+                                                            {{ slot.display }}
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">No time slots available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No tutors found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit" class="btn btn-secondary">Add to Favorite List</button>
+                <a href="{% url 'app:parent_profile' %}" class="btn btn-outline-secondary">Back</a>
+                <h8><br>** You can navigate to the booking page to view your favorite tutor list **</br></h8>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    .table {
+        margin-top: 20px;
+        width: 100%;
+    }
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    .btn {
+        margin-top: 10px;
+    }
+    .time-slot-day {
+        margin-bottom: 10px;
+    }
+    .time-slot-item {
+        margin: 5px 0;
+        padding: 5px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    .time-slot-item:hover {
+        background-color: #e9ecef;
+    }
+    .time-slot-item input[type="radio"] {
+        margin-right: 8px;
+    }
+    .time-slot-item label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+</style>
+
+{% endblock %}

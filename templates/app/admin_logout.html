@@ -1,0 +1,18 @@
+{% extends "app/admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <hr>
+
+    <div class="alert alert-info text-center">
+        <h4>Do you confirm want to log out?</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" name="yes" class="btn btn-primary mr-3">Yes</button>
+            <button type="submit" name="no" class="btn btn-secondary">No</button>
+        </form>
+    </div>
+
+    <a href="{% url 'app:admin_profile' %}" class="btn btn-secondary mt-3">Back</a>
+</div>
+{% endblock %}

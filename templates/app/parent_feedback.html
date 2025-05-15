@@ -1,0 +1,233 @@
+{% extends "app/parent_layout.html" %}
+{% load app_filters %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Submit Feedback</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if tutor_classes %}
+                    <form method="post" action="{% url 'app:parent_feedback' %}" id="feedbackForm">
+                        {% csrf_token %}
+                        
+                        <!-- Select Tutor and Subject -->
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="tutor">Select Tutor & Subject:</label>
+                            <select class="form-select" name="tutor" id="tutor" required>
+                                <option value="" selected disabled>Select Tutor & Subject</option>
+                                {% for item in tutor_classes %}
+                                <option value="{{ item.tutor.user.id }}" 
+                                        data-subject="{{ item.subject_name }}"
+                                        data-sessions="{{ item.sessions }}">
+                                    {{ item.tutor.tutor_name }} - {{ item.subject_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Select Session Time -->
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="schedule_id">Session Time:</label>
+                            <select class="form-select" name="schedule_id" id="schedule_id" required disabled>
+                                <option value="" selected disabled>First select a tutor</option>
+                            </select>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="form-group mb-3">
+                            <label class="form-label" for="comments">Your Feedback:</label>
+                            <textarea class="form-control" name="comments" id="comments" rows="4" 
+                                    placeholder="Write your feedback here..." required></textarea>
+                        </div>
+
+                        <!-- Flagged for Staff -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" name="flagged" id="flagged">
+                            <label class="form-check-label" for="flagged">
+                                Flag this feedback for staff review
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> You don't have any confirmed sessions to provide feedback for.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            {% if previous_feedbacks %}
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Previous Feedbacks</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for feedback in previous_feedbacks %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ feedback.tutor.tutor_name }}</h6>
+                                <p class="mb-1">
+                                    {% if feedback.comments %}
+                                        {% with parts=feedback.comments|split:"Time Slot: " %}
+                                            {% if parts|length > 1 %}
+                                                {% with time_slot=parts.1|split:"good"|first|split:"goood"|first %}
+                                                    <i class="fas fa-calendar"></i>
+                                                    {% if time_slot|safe|slice:":1" == "{" %}
+                                                        {% with data=time_slot|safe %}
+                                                            {% if "'weekday':" in data %}
+                                                                {% with weekday=data|split:"'weekday': '"|last|split:"'"|first %}
+                                                                {% with start=data|split:"'start_time': '"|last|split:"'"|first %}
+                                                                {% with end=data|split:"'end_time': '"|last|split:"'"|first %}
+                                                                    {{ weekday }} {{ start }}:00 - {{ end }}:00
+                                                                {% endwith %}
+                                                                {% endwith %}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                {{ time_slot|safe }}
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    {% else %}
+                                                        {{ time_slot|safe }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                                <br>
+                                                {% with comment=parts.1|split:"good"|last|split:"goood"|last %}
+                                                    {% if comment and comment != "\n" and not "weekday" in comment and not "start_time" in comment %}
+                                                        <small class="text-muted mt-1">{{ comment|safe }}</small>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                                {{ feedback.comments|safe }}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                </p>
+                                {% if feedback.flagged %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-flag"></i> Flagged
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    .badge {
+        font-weight: 500;
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tutorDropdown = document.getElementById("tutor");
+    const sessionDropdown = document.getElementById("schedule_id");
+
+    function updateSessionDropdown() {
+        // Clear and disable the session dropdown
+        sessionDropdown.innerHTML = '<option value="" selected disabled>Select Session Time</option>';
+        sessionDropdown.disabled = true;
+        
+        // Get the selected tutor option
+        const selectedOption = tutorDropdown.options[tutorDropdown.selectedIndex];
+        if (!selectedOption || !selectedOption.value) {
+            console.log("No tutor selected");
+            return;
+        }
+
+        // Get the sessions data
+        const sessionsData = selectedOption.getAttribute('data-sessions');
+        console.log("Raw sessions data:", sessionsData);
+
+        try {
+            // Parse the JSON data
+            const sessions = JSON.parse(sessionsData || '[]');
+            console.log("Parsed sessions:", sessions);
+            
+            if (!Array.isArray(sessions)) {
+                throw new Error("Sessions data is not an array");
+            }
+
+            if (sessions.length === 0) {
+                console.log("No sessions available");
+                sessionDropdown.innerHTML = '<option value="" selected disabled>No sessions available</option>';
+                return;
+            }
+
+            // Add each session as an option
+            sessions.forEach((session, index) => {
+                console.log(`Processing session ${index}:`, session);
+                
+                if (!session || typeof session !== 'object') {
+                    console.log(`Invalid session at index ${index}`);
+                    return;
+                }
+
+                const { schedule_id, session_time } = session;
+                if (!schedule_id || !session_time) {
+                    console.log(`Missing required fields in session at index ${index}`);
+                    return;
+                }
+
+                const option = document.createElement("option");
+                option.value = schedule_id;
+                option.textContent = session_time;  
+                sessionDropdown.appendChild(option);
+            });
+
+            // Enable the dropdown if we added any options
+            if (sessionDropdown.options.length > 1) {
+                sessionDropdown.disabled = false;
+            } else {
+                sessionDropdown.innerHTML = '<option value="" selected disabled>No valid sessions found</option>';
+            }
+        } catch (error) {
+            console.error("Error processing sessions:", error);
+            console.error("Sessions data was:", sessionsData);
+            sessionDropdown.innerHTML = '<option value="" selected disabled>Error loading sessions</option>';
+        }
+    }
+
+    // Add the change event listener
+    tutorDropdown.addEventListener("change", updateSessionDropdown);
+});
+</script>
+{% endblock %}
